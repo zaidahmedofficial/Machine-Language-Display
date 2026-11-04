@@ -8,6 +8,9 @@ const TARGET_CANVAS_WIDTH = 1280;
 const MIN_CHAR_HEIGHT = 8;
 const MAX_CHAR_HEIGHT = 34;
 
+/** Minimum channel brightness so a dark pixel's glyph never disappears on black. */
+const MIN_CHAR_BRIGHTNESS = 28;
+
 export interface EngineState {
   duration: number | null;
   currentTime: number;
@@ -28,6 +31,8 @@ export interface UseVideoBinaryEngineProps {
   cols: number;
   threshold: number;
   inverted: boolean;
+  /** 0 = grayscale, 100 = full original color. */
+  intensity: number;
 }
 
 export interface UseVideoBinaryEngineResult {
@@ -47,6 +52,7 @@ export function useVideoBinaryEngine({
   cols,
   threshold,
   inverted,
+  intensity,
 }: UseVideoBinaryEngineProps): UseVideoBinaryEngineResult {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -54,6 +60,7 @@ export function useVideoBinaryEngine({
   const colsRef = useRef<number>(cols);
   const thresholdRef = useRef<number>(threshold);
   const invertedRef = useRef<boolean>(inverted);
+  const intensityRef = useRef<number>(intensity);
 
   const scratchCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
