@@ -105,6 +105,11 @@ export function useVideoBinaryEngine({
     dirtyRef.current = true;
   }, [inverted]);
 
+  useEffect(() => {
+    intensityRef.current = intensity;
+    dirtyRef.current = true;
+  }, [intensity]);
+
   const acceptFile = useCallback((file: File): boolean => {
     if (!file) return false;
     const type = file.type.toLowerCase().trim();
@@ -161,6 +166,7 @@ export function useVideoBinaryEngine({
             video,
             colsRef.current,
             thresholdRef.current,
+            intensityRef.current,
             invertedRef.current,
             scratchCanvasRef,
             lastCanvasWRef,
@@ -410,6 +416,7 @@ function renderBinaryFrame(
   video: HTMLVideoElement,
   colsInput: number,
   thresholdInput: number,
+  intensityInput: number,
   inverted: boolean,
   scratchRef: React.MutableRefObject<HTMLCanvasElement | null>,
   lastWRef: React.MutableRefObject<number>,
@@ -422,6 +429,8 @@ function renderBinaryFrame(
 
   const cols = Math.max(40, Math.min(320, Math.round(colsInput)));
   const threshold = Math.max(0, Math.min(255, Math.round(thresholdInput)));
+  // 0 = grayscale, 1 = full original color.
+  const intensity = Math.max(0, Math.min(100, Math.round(intensityInput))) / 100;
   const aspect = videoWidth / videoHeight;
 
   // Choose a pixel font size so the canvas lands near TARGET_CANVAS_WIDTH.
@@ -462,22 +471,7 @@ function renderBinaryFrame(
   if (!scratchCtx) return;
 
   scratchCtx.drawImage(video, 0, 0, cols, rows);
-  const imageData = scratchCtx.getImageData(0, 0, cols, rows);
-  const data = imageData.data;
-
-  // Build the binary rows. Luminance via Rec. 601 coefficients. No libraries.
-  const lines: string[] = new Array(rows);
-  for (let y = 0; y < rows; y++) {
-    let line = '';
-    for (let x = 0; x < cols; x++) {
-      const offset = (y * cols + x) * 4;
-      const luma = (data[offset] * 299 + data[offset + 1] * 587 + data[offset + 2] * 114) / 1000;
-      const isOne = luma > threshold;
-      const glyph = isOne ? '1' : '0';
-      line += inverted ? (glyph === '1' ? '0' : '1') : glyph;
-    }
-    lines[y] = line;
-  }
+  const data = scratchCtx.getImageData(0, 0, cols, rows).data;
 
   ctx.fillStyle = '#000000';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -486,13 +480,78 @@ function renderBinaryFrame(
   ctx.font = `${charHeight}px ${MONO_FONT}`;
   ctx.textBaseline = 'top';
   ctx.textAlign = 'left';
-  ctx.shadowColor = 'rgba(0, 255, 65, 0.55)';
-  ctx.shadowBlur = Math.max(2, Math.round(charHeight * 0.35));
-  ctx.fillStyle = '#00ff41';
+  ctx.shadowOffsetX = 0;
+  ctx.shadowOffsetY = 0;
+  ctx.shadowBlur = Math.max(2, Math.min(4, Math.round(charHeight * 0.25)));
 
-  let y = 0;
-  for (let row = 0; row < rows; row++) {
-    ctx.fillText(lines[row], 0, y);
-    y += charHeight;
+  // Draw each pixel's glyph in that pixel's own color, batching consecutive
+  // glyphs that share a color so we change fillStyle/shadowColor as rarely as
+  // possible. Luminance (Rec. 601) chooses the glyph; RGB chooses the color.
+  for (let y = 0; y < rows; y++) {
+    const py = y * charHeight;
+    let runStartX = 0;
+    let runColor = '';
+    let run = '';
+
+    for (let x = 0; x < cols; x++) {
+      const offset = (y * cols + x) * 4;
+      const r = data[offset];
+      const g = data[offset + 1];
+      const b = data[offset + 2];
+
+      const luma = (r * 299 + g * 587 + b * 114) / 1000;
+      const isOne = luma > threshold;
+      const glyph = (isOne !== inverted) ? '1' : '0';
+
+      // Color: blend the pixel toward its grayscale value by intensity, so
+      // 0 is monochrome and 1 is the untouched original color.
+      let cr = luma + (r - luma) * intensity;
+      let cg = luma + (g - luma) * intensity;
+      let cb = luma + (b - luma) * intensity;
+
+      // Visibility boost: never let a dark glyph fully vanish on black.
+      const mx = cr > cg ? (cr > cb ? cr : cb) : (cg > cb ? cg : cb);
+      if (mx < MIN_CHAR_BRIGHTNESS) {
+        if (mx <= 0) {
+          cr = MIN_CHAR_BRIGHTNESS;
+          cg = MIN_CHAR_BRIGHTNESS;
+          cb = MIN_CHAR_BRIGHTNESS;
+        } else {
+          const scale = MIN_CHAR_BRIGHTNESS / mx;
+          cr *= scale;
+          cg *= scale;
+          cb *= scale;
+        }
+      }
+
+      const color = `rgb(${clamp255(cr)},${clamp255(cg)},${clamp255(cb)})`;
+
+      if (color !== runColor) {
+        if (run.length > 0) {
+          ctx.fillStyle = runColor;
+          ctx.shadowColor = runColor;
+          ctx.fillText(run, runStartX * advance, py);
+        }
+        runColor = color;
+        runStartX = x;
+        run = glyph;
+      } else {
+        run += glyph;
+      }
+    }
+
+    if (run.length > 0) {
+      ctx.fillStyle = runColor;
+      ctx.shadowColor = runColor;
+      ctx.fillText(run, runStartX * advance, py);
+    }
   }
+
+  ctx.shadowBlur = 0;
+}
+
+function clamp255(value: number): number {
+  if (value < 0) return 0;
+  if (value > 255) return 255;
+  return value | 0;
 }

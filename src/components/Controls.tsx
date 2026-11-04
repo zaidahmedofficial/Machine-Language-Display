@@ -6,6 +6,7 @@ export interface ControlsProps {
   cols: number;
   threshold: number;
   inverted: boolean;
+  intensity: number;
   isPlaying: boolean;
   isReady: boolean;
   isEnded: boolean;
@@ -16,6 +17,7 @@ export interface ControlsProps {
   onColsChange: (cols: number) => void;
   onThresholdChange: (threshold: number) => void;
   onInvertChange: (inverted: boolean) => void;
+  onIntensityChange: (intensity: number) => void;
   onReset: () => void;
   fps: number;
   gridRows: number;
@@ -25,6 +27,7 @@ export const Controls = ({
   cols,
   threshold,
   inverted,
+  intensity,
   isPlaying,
   isReady,
   isEnded,
@@ -35,6 +38,7 @@ export const Controls = ({
   onColsChange,
   onThresholdChange,
   onInvertChange,
+  onIntensityChange,
   onReset,
   fps,
   gridRows,
