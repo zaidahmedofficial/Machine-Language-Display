@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -428,8 +428,8 @@ function renderBinaryFrame(
   if (videoWidth <= 0 || videoHeight <= 0) return;
 
   const cols = Math.max(40, Math.min(320, Math.round(colsInput)));
-  const threshold = Math.max(0, Math.min(255, Math.round(thresholdInput)));
-// 0 = grayscale, 1 = full original color.
+const threshold = Math.max(0, Math.min(255, Math.round(thresholdInput)));
+  // 0 = grayscale, 1 = full original color.
   const intensity = Math.max(0, Math.min(100, Math.round(intensityInput))) / 100;
   const aspect = videoWidth / videoHeight;
 
@@ -464,10 +464,10 @@ function renderBinaryFrame(
     scratch = document.createElement('canvas');
     scratchRef.current = scratch;
   }
-  scratch.width = cols;
+scratch.width = cols;
   scratch.height = rows;
 
-const scratchCtx = scratch.getContext('2d', { alpha: false });
+  const scratchCtx = scratch.getContext('2d', { alpha: false });
   if (!scratchCtx) return;
 
   scratchCtx.drawImage(video, 0, 0, cols, rows);
@@ -523,9 +523,9 @@ const scratchCtx = scratch.getContext('2d', { alpha: false });
           cg *= scale;
           cb *= scale;
         }
-      }
+}
 
-const color = `rgb(${clamp255(cr)},${clamp255(cg)},${clamp255(cb)})`;
+      const color = `rgb(${clamp255(cr)},${clamp255(cg)},${clamp255(cb)})`;
 
       if (color !== runColor) {
         if (run.length > 0) {
@@ -556,6 +556,3 @@ function clamp255(value: number): number {
   if (value > 255) return 255;
   return value | 0;
 }
-
-
-
