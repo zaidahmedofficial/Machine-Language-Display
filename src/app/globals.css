@@ -1,0 +1,236 @@
+@import "tailwindcss";
+
+:root {
+  --terminal-green: #00ff41;
+  --terminal-dim: #008f11;
+  --terminal-bg: #000000;
+  --terminal-glow: rgba(0, 255, 65, 0.35);
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background-color: var(--terminal-bg);
+  color: var(--terminal-green);
+  font-family: 'Courier New', 'Consolas', 'Monaco', monospace;
+}
+
+/* Scanline / CRT texture overlay */
+.scanlines::after {
+  content: ' ';
+  position: fixed;
+  inset: 0;
+  display: block;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.15) 0px,
+    rgba(0, 0, 0, 0.15) 1px,
+    transparent 2px,
+    transparent 4px
+  );
+  z-index: 9999;
+  opacity: 0.6;
+}
+
+.scanlines::before {
+  content: ' ';
+  position: fixed;
+  inset: 0;
+  display: block;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 50%, rgba(0, 0, 0, 0.2) 100%);
+  z-index: 9999;
+  opacity: 0.5;
+}
+
+/* Binary matrix background */
+.binary-bg::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  opacity: 0.03;
+  pointer-events: none;
+  background-image: linear-gradient(90deg, #004400 1px, transparent 1px),
+                    linear-gradient(0deg, #004400 1px, transparent 1px);
+  background-size: 20px 20px;
+  z-index: 0;
+}
+
+/* Fallback monospace font stack if Courier New is missing */
+@font-face {
+  font-family: 'JetBrainsMono';
+  src: local('JetBrains Mono'), local('JetBrainsMono-Regular'), local('Consolas');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'JetBrainsMono';
+  src: local('JetBrains Mono Medium'), local('Consolas');
+  font-weight: 600;
+  font-style: normal;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #001100;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--terminal-dim);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--terminal-green);
+}
+
+/* Text glow for retro feel */
+.text-glow {
+  text-shadow: 0 0 4px var(--terminal-glow), 0 0 8px var(--terminal-dim);
+}
+
+.text-glow-md {
+  text-shadow: 0 0 6px var(--terminal-glow), 0 0 12px var(--terminal-dim);
+}
+
+/* Button styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--terminal-bg);
+  background-color: var(--terminal-green);
+  border: 2px solid var(--terminal-green);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn:hover {
+  background-color: var(--terminal-dim);
+  border-color: var(--terminal-dim);
+  box-shadow: 0 0 12px var(--terminal-glow);
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  filter: grayscale(0.5);
+}
+
+.btn-secondary {
+  color: var(--terminal-green);
+  background-color: transparent;
+}
+
+.btn-secondary:hover {
+  background-color: rgba(0, 255, 65, 0.1);
+  box-shadow: 0 0 12px var(--terminal-glow);
+}
+
+/* Range sliders */
+input[type='range'] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  background: #003300;
+  border-radius: 3px;
+  outline: none;
+}
+
+input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--terminal-green);
+  border: 2px solid var(--terminal-dim);
+  border-radius: 50%;
+  cursor: pointer;
+  margin-top: -5px;
+  box-shadow: 0 0 8px var(--terminal-glow);
+}
+
+input[type='range']::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  background: var(--terminal-green);
+  border: 2px solid var(--terminal-dim);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 8px var(--terminal-glow);
+}
+
+/* Checkbox toggle */
+.toggle {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  background: #003300;
+  border-radius: 12px;
+  cursor: pointer;
+  border: 1px solid var(--terminal-dim);
+  transition: all 0.2s ease;
+}
+
+.toggle.active {
+  background: var(--terminal-dim);
+  box-shadow: 0 0 8px var(--terminal-glow);
+}
+
+.toggle::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  background: var(--terminal-green);
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+  box-shadow: 0 0 6px var(--terminal-glow);
+}
+
+.toggle.active::after {
+  transform: translateX(20px);
+}
+
+/* Focus styles */
+button:focus-visible,
+input:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--terminal-green);
+  outline-offset: 2px;
+}
+
+/* Canvas */
+#binaryCanvas,
+#previewCanvas {
+  display: block;
+  image-rendering: pixelated;
+}
