@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
@@ -429,11 +429,8 @@ function renderBinaryFrame(
 
   const cols = Math.max(40, Math.min(320, Math.round(colsInput)));
   const threshold = Math.max(0, Math.min(255, Math.round(thresholdInput)));
-  // 0 = grayscale, 1 = full original color.
+// 0 = grayscale, 1 = full original color.
   const intensity = Math.max(0, Math.min(100, Math.round(intensityInput))) / 100;
-  if (typeof window !== 'undefined') {
-    (window as unknown as Record<string, unknown>).__binaryIntensity = intensity;
-  }
   const aspect = videoWidth / videoHeight;
 
   // Choose a pixel font size so the canvas lands near TARGET_CANVAS_WIDTH.
@@ -445,7 +442,7 @@ function renderBinaryFrame(
   const advance = ctx.measureText('0').width || charHeight * 0.6;
 
   // Rows needed so that (cols * advance) : (rows * charHeight) matches the
-  // source aspect ratio. This is the aspect correction — the grid is never
+  // source aspect ratio. This is the aspect correction â€” the grid is never
   // stretched.
   let rows = Math.round((cols * advance) / charHeight / aspect);
   rows = Math.max(8, Math.min(320, rows));
@@ -470,7 +467,7 @@ function renderBinaryFrame(
   scratch.width = cols;
   scratch.height = rows;
 
-  const scratchCtx = scratch.getContext('2d', { alpha: false });
+const scratchCtx = scratch.getContext('2d', { alpha: false });
   if (!scratchCtx) return;
 
   scratchCtx.drawImage(video, 0, 0, cols, rows);
@@ -485,6 +482,7 @@ function renderBinaryFrame(
   ctx.textAlign = 'left';
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = 0;
+  // Subtle glow in each glyph's own color (kept at 2–4px for legibility).
   ctx.shadowBlur = Math.max(2, Math.min(4, Math.round(charHeight * 0.25)));
 
   // Draw each pixel's glyph in that pixel's own color, batching consecutive
@@ -527,7 +525,7 @@ function renderBinaryFrame(
         }
       }
 
-      const color = `rgb(${clamp255(cr)},${clamp255(cg)},${clamp255(cb)})`;
+const color = `rgb(${clamp255(cr)},${clamp255(cg)},${clamp255(cb)})`;
 
       if (color !== runColor) {
         if (run.length > 0) {
@@ -558,3 +556,6 @@ function clamp255(value: number): number {
   if (value > 255) return 255;
   return value | 0;
 }
+
+
+
