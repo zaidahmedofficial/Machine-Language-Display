@@ -13,9 +13,10 @@ export default function Home() {
   const [cols, setCols] = useState<number>(DEFAULT_COLS);
   const [threshold, setThreshold] = useState<number>(DEFAULT_THRESHOLD);
   const [inverted, setInverted] = useState<boolean>(false);
+  const [intensity, setIntensity] = useState<number>(100);
   const [showOriginal, setShowOriginal] = useState<boolean>(false);
 
-  const engine = useVideoBinaryEngine({ cols, threshold, inverted });
+  const engine = useVideoBinaryEngine({ cols, threshold, inverted, intensity });
   const { videoRef, canvasRef, state, acceptFile, loadVideo, play, pause, toggle, restart, reset } =
     engine;
 
@@ -182,6 +183,7 @@ export default function Home() {
                 cols={cols}
                 threshold={threshold}
                 inverted={inverted}
+                intensity={intensity}
                 isPlaying={state.isPlaying}
                 isReady={state.isReady}
                 isEnded={state.isEnded}
@@ -192,6 +194,7 @@ export default function Home() {
                 onColsChange={setCols}
                 onThresholdChange={setThreshold}
                 onInvertChange={setInverted}
+                onIntensityChange={setIntensity}
                 onReset={reset}
                 fps={state.fps}
                 gridRows={state.gridRows}
@@ -271,7 +274,7 @@ export default function Home() {
 
       <footer className="mt-6 text-center text-xs opacity-40 font-mono">
         {loaded
-          ? `BINARY RENDERER · ${cols} COLS · THR ${threshold} · ${
+          ? `BINARY RENDERER · ${cols} COLS · THR ${threshold} · COLOR ${intensity}% · ${
               inverted ? 'INV' : 'NRM'
             } · ${state.isPlaying ? 'PLAY' : 'PAUSE'} · ${state.fps.toFixed(1)} FPS`
           : 'BINARY RENDERER · READY · NO SIGNAL'}

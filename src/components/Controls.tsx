@@ -65,6 +65,11 @@ export const Controls = ({
     onInvertChange(!inverted);
   }, [inverted, onInvertChange]);
 
+  const handleIntensity = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => onIntensityChange(Number(e.target.value)),
+    [onIntensityChange]
+  );
+
   const handleReset = useCallback(() => {
     onReset();
   }, [onReset]);
@@ -148,6 +153,28 @@ export const Controls = ({
             <span>0</span>
             <span>128</span>
             <span>255</span>
+          </div>
+        </div>
+
+        <div className="space-y-1 sm:col-span-2">
+          <label htmlFor="intensity" className="text-sm text-[#00ff41] opacity-90">
+            COLOR INTENSITY: {intensity}%
+          </label>
+          <input
+            id="intensity"
+            type="range"
+            min="0"
+            max="100"
+            value={intensity}
+            onChange={handleIntensity}
+            disabled={!canPlay}
+            aria-label="Color intensity from grayscale to full color"
+            className="w-full"
+          />
+          <div className="flex justify-between text-xs opacity-60 font-mono">
+            <span>GRAYSCALE</span>
+            <span>50</span>
+            <span>FULL COLOR</span>
           </div>
         </div>
 

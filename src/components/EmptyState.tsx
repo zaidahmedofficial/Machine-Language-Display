@@ -30,11 +30,12 @@ export const EmptyState = ({ onFileSelected }: EmptyStateProps) => {
           BINARY
         </h1>
         <p className="text-xl sm:text-2xl text-[#00ff41] text-glow">
-          see video in 0 and 1
+          see video in 0 and 1 — in full color
         </p>
         <p className="text-base sm:text-lg opacity-80 leading-relaxed max-w-lg mx-auto">
-          Import a video. Watch it become 0 and 1. Drag a file below or browse
-          your PC. Everything stays in your browser. No uploads. No server.
+          Import a video. Watch it become 0 and 1 — every glyph painted in that
+          pixel&apos;s true color. Drag a file below or browse your PC.
+          Everything stays in your browser. No uploads. No server.
         </p>
       </div>
 
@@ -53,7 +54,7 @@ export const EmptyState = ({ onFileSelected }: EmptyStateProps) => {
         </div>
         <div className="bg-black border border-[#004400] rounded p-3">
           <p className="text-[#00ff41] font-semibold text-sm mb-1">LIVE RENDER</p>
-          <p className="text-xs opacity-60">Real-time binary grid</p>
+          <p className="text-xs opacity-60">Real-time color binary grid</p>
         </div>
       </div>
     </div>

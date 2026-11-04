@@ -431,6 +431,9 @@ function renderBinaryFrame(
   const threshold = Math.max(0, Math.min(255, Math.round(thresholdInput)));
   // 0 = grayscale, 1 = full original color.
   const intensity = Math.max(0, Math.min(100, Math.round(intensityInput))) / 100;
+  if (typeof window !== 'undefined') {
+    (window as unknown as Record<string, unknown>).__binaryIntensity = intensity;
+  }
   const aspect = videoWidth / videoHeight;
 
   // Choose a pixel font size so the canvas lands near TARGET_CANVAS_WIDTH.
