@@ -156,7 +156,7 @@ export default function Home() {
                     ref={canvasRef}
                     id="binaryCanvas"
                     aria-label="Binary (0 and 1) rendering of the imported video"
-                    className="block max-w-full"
+                    className="block max-w-full max-h-[70vh]"
                   />
                 )}
               </div>
@@ -197,23 +197,25 @@ export default function Home() {
                 gridRows={state.gridRows}
               />
 
-              <div className="bg-black border border-[#004400] rounded-lg p-4">
-                <label
-                  htmlFor="show-original"
-                  className="flex items-center justify-between gap-3 cursor-pointer"
-                >
-                  <span className="text-sm text-[#00ff41]">SHOW ORIGINAL</span>
-                  <button
-                    id="show-original"
-                    type="button"
-                    role="switch"
-                    aria-checked={showOriginal}
-                    className={`toggle ${showOriginal ? 'active' : ''}`}
-                    onClick={() => setShowOriginal((value) => !value)}
-                  >
-                    <span className="sr-only">Toggle original video</span>
-                  </button>
-                </label>
+              <div
+                role="switch"
+                tabIndex={0}
+                aria-checked={showOriginal}
+                aria-label="Show original video alongside the binary render"
+                onClick={() => setShowOriginal((value) => !value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    setShowOriginal((value) => !value);
+                  }
+                }}
+                className="flex items-center justify-between gap-3 cursor-pointer bg-black border border-[#004400] rounded-lg p-4"
+              >
+                <span className="text-sm text-[#00ff41]">SHOW ORIGINAL</span>
+                <span
+                  className={`toggle ${showOriginal ? 'active' : ''}`}
+                  aria-hidden="true"
+                />
               </div>
 
               <div className="bg-black border border-[#004400] rounded-lg p-4 space-y-2">

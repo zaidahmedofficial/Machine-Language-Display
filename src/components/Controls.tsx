@@ -148,19 +148,18 @@ export const Controls = ({
         </div>
 
         <div className="flex items-center justify-between gap-2">
-          <label htmlFor="invert" className="text-sm text-[#00ff41] opacity-90 whitespace-nowrap">
+          <span className="text-sm text-[#00ff41] opacity-90 whitespace-nowrap">
             INVERT 0/1
-          </label>
+          </span>
           <div className="flex items-center gap-3">
             <button
               type="button"
-              id="invert"
               className={`toggle ${inverted ? 'active' : ''}`}
               onClick={handleInvert}
               disabled={!canPlay}
               role="switch"
               aria-checked={inverted}
-              aria-label="Toggle inverted binary mapping"
+              aria-label="Invert binary mapping (swap 0 and 1)"
             >
               <span className="sr-only">Invert binary</span>
             </button>
