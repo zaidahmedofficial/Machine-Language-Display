@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# BINARY — see video in 0 and 1
 
-## Getting Started
+Import a video from your PC and watch it rendered, in real time, entirely as a
+grid of `1`s and `0`s. Everything runs in the browser — there are no uploads, no
+API routes, no database, and no server-side video processing.
 
-First, run the development server:
+## Features
+
+- Drag-and-drop zone and file picker (`accept="video/*"`).
+- Hidden `<video>` decodes frames; `requestAnimationFrame` + `drawImage` sample
+  them through an offscreen canvas at a capped resolution.
+- Per-pixel luminance (Rec. 601) is thresholded to `1` or `0` and drawn as a
+  glowing green (`#00FF41`) monospace grid on black, with a CRT scanline look.
+- Aspect-corrected grid so the video is never stretched.
+- Live controls: **Play / Pause / Restart / Reset**, **Resolution** (40–320
+  columns), **Threshold** (0–255), **Invert** (swap 0/1), **Show original**
+  (side-by-side), and an **FPS** counter.
+- Handles empty, loading, ended, and unsupported-file states; object URLs and
+  animation frames are cleaned up on unmount.
+- Keyboard: `Space` play/pause, `R` restart, `Esc` remove video.
+- Responsive, dark, accessible (labelled controls, `role="switch"`, live status).
+
+## Running it
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev     # http://localhost:3000
+npm run build   # production build
+npm start       # serve the production build
+npm run lint
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Next.js (App Router) · TypeScript (strict) · React · Tailwind CSS.
+No other runtime dependencies — pixel sampling is written by hand.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Project layout
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+  app/
+    layout.tsx              Root layout + metadata
+    page.tsx                Main screen: import, canvas, controls, status
+    globals.css             Terminal theme, scanlines, sliders, toggles
+  components/
+    FileImport.tsx          Drag-and-drop + file input zone
+    EmptyState.tsx          Hero / no-file state
+    Controls.tsx            Playback, resolution, threshold, invert, FPS
+  hooks/
+    useVideoBinaryEngine.ts Video decode + binary sampling + render loop
+```

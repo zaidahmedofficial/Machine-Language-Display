@@ -65,6 +65,7 @@ export function useVideoBinaryEngine({
   const lastCanvasHRef = useRef<number>(0);
   const gridRowsRef = useRef<number>(0);
   const reportedRowsRef = useRef<number>(-1);
+  const dirtyRef = useRef<boolean>(true);
 
   const [state, setState] = useState<EngineState>({
     duration: null,
@@ -84,14 +85,17 @@ export function useVideoBinaryEngine({
 
   useEffect(() => {
     colsRef.current = cols;
+    dirtyRef.current = true;
   }, [cols]);
 
   useEffect(() => {
     thresholdRef.current = threshold;
+    dirtyRef.current = true;
   }, [threshold]);
 
   useEffect(() => {
     invertedRef.current = inverted;
+    dirtyRef.current = true;
   }, [inverted]);
 
   const acceptFile = useCallback((file: File): boolean => {
@@ -119,42 +123,51 @@ export function useVideoBinaryEngine({
       const currentCtx = currentCanvas?.getContext('2d', { alpha: false }) ?? null;
 
       if (video && currentCanvas && currentCtx && video.readyState >= 2 && video.videoWidth > 0) {
-        // FPS sampling
-        if (frameCountRef.current === 0) {
-          lastFpsSampleRef.current = now;
-        }
-        frameCountRef.current += 1;
-        if (now - lastFpsSampleRef.current >= 500) {
-          fpsRef.current =
-            Math.round(
-              (frameCountRef.current / ((now - lastFpsSampleRef.current) / 1000)) * 10
-            ) / 10;
-          frameCountRef.current = 0;
-          lastFpsSampleRef.current = now;
-          setState((prev) =>
-            prev.fps === fpsRef.current ? prev : { ...prev, fps: fpsRef.current }
-          );
+        const playing = !video.paused && !video.ended;
+
+        // FPS sampling (only counts frames while actually playing).
+        if (playing) {
+          if (frameCountRef.current === 0) {
+            lastFpsSampleRef.current = now;
+          }
+          frameCountRef.current += 1;
+          if (now - lastFpsSampleRef.current >= 500) {
+            fpsRef.current =
+              Math.round(
+                (frameCountRef.current / ((now - lastFpsSampleRef.current) / 1000)) * 10
+              ) / 10;
+            frameCountRef.current = 0;
+            lastFpsSampleRef.current = now;
+            setState((prev) =>
+              prev.fps === fpsRef.current ? prev : { ...prev, fps: fpsRef.current }
+            );
+          }
         }
 
-        renderBinaryFrame(
-          currentCanvas,
-          currentCtx,
-          video,
-          colsRef.current,
-          thresholdRef.current,
-          invertedRef.current,
-          scratchCanvasRef,
-          lastCanvasWRef,
-          lastCanvasHRef,
-          gridRowsRef
-        );
-
-        if (gridRowsRef.current !== reportedRowsRef.current) {
-          reportedRowsRef.current = gridRowsRef.current;
-          const nextRows = gridRowsRef.current;
-          setState((prev) =>
-            prev.gridRows === nextRows ? prev : { ...prev, gridRows: nextRows }
+        // Only re-sample when the frame is moving or a control changed, so a
+        // paused video does not burn CPU redrawing identical output.
+        if (playing || dirtyRef.current) {
+          dirtyRef.current = false;
+          renderBinaryFrame(
+            currentCanvas,
+            currentCtx,
+            video,
+            colsRef.current,
+            thresholdRef.current,
+            invertedRef.current,
+            scratchCanvasRef,
+            lastCanvasWRef,
+            lastCanvasHRef,
+            gridRowsRef
           );
+
+          if (gridRowsRef.current !== reportedRowsRef.current) {
+            reportedRowsRef.current = gridRowsRef.current;
+            const nextRows = gridRowsRef.current;
+            setState((prev) =>
+              prev.gridRows === nextRows ? prev : { ...prev, gridRows: nextRows }
+            );
+          }
         }
       }
 
@@ -216,7 +229,12 @@ export function useVideoBinaryEngine({
     };
 
     const onCanPlay = () => {
+      dirtyRef.current = true;
       setState((prev) => ({ ...prev, isReady: true, error: null }));
+    };
+
+    const onSeeked = () => {
+      dirtyRef.current = true;
     };
 
     const onTimeUpdate = () => {
@@ -258,6 +276,7 @@ export function useVideoBinaryEngine({
 
     video.addEventListener('loadedmetadata', onLoadedMetadata);
     video.addEventListener('canplay', onCanPlay);
+    video.addEventListener('seeked', onSeeked);
     video.addEventListener('timeupdate', onTimeUpdate);
     video.addEventListener('play', onPlay);
     video.addEventListener('pause', onPause);
